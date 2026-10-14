@@ -891,7 +891,16 @@ function openOuterTag(dom, node, cssRules, dart, depth, outerTagList) {
     var [id, classes] = getNodeIdAndClasses(node);
     dart.code += `\n${indent}// ${node.tagName} #${id} .${classes}\n`;
     node.closings = [];
+    node.closingIf = "";
 
+    // 'if'-clause to be outside of outer tags too
+    if (outerTagList.length>0 && attr(node,"if") != null){
+        var clause = node.getAttribute("if");
+        clause = clause.replaceAll("@@", "&&");
+        dart.code += `${indent}${clause}?\n`;
+        node.closingIf = ":SizedBox()";
+    }
+    // Make outer tags
     for (let outerTag of outerTagList) {
         // SelectionArea
         if (outerTag == "SelectionArea") {
@@ -959,7 +968,8 @@ function openOuterTag(dom, node, cssRules, dart, depth, outerTagList) {
 function closeOuterTag(dom, node, cssRules, dart, depth, outerTagList) {
     var indent = node.indent;
     var closing = node.closings.join("");
-    dart.code += `${indent}${closing},\n`;
+    var closingIf = node.closingIf;
+    dart.code += `${indent}${closing}${closingIf},\n`;
 }
 
 // Process view func tag
