@@ -526,10 +526,12 @@ tagProcessors.DIV = function (dom, node, cssRules, dart, depth) {
     } else { // Regular div
         addMarker(dart, node);
         let str="";
+        let openWith = null;
 
         if (attr(node,"h2d-display")=="flex" && attr(node,"h2d-flex-direction")=="row"){
             str = `${indent}Row(\n`;
             closeStr.push(")");
+            openWith = "row";
         }else{
             if (node.hasAttribute("h2d-width")){
                 str = `${indent}Container(\n`;
@@ -539,6 +541,7 @@ tagProcessors.DIV = function (dom, node, cssRules, dart, depth) {
                 str = `${indent}Container(width:double.infinity,\n`;
                 closeStr.push(")");
             }
+            openWith = "container";
         }
         dart.code += str;
         processAttributes(dom, node, cssRules, dart, depth);
@@ -552,7 +555,10 @@ tagProcessors.DIV = function (dom, node, cssRules, dart, depth) {
                 let [quoteH,h] = parseText(hStr);
                 if (quoteW==WITH_QUOTES) w = `"${w}"`;
                 if (quoteH==WITH_QUOTES) h = `"${h}"`;
-                dart.code += `${indent}${TAB}constraints:BoxConstraints(minWidth:${w}, minHeight:${h}),\n`;
+
+                if (openWith=="container")
+                    dart.code += `${indent}${TAB}constraints:`+
+                    `BoxConstraints(minWidth:${w}, minHeight:${h}),\n`;
             }
         }
         if (attr(node,"h2d-display")=="flex" && attr(node,"h2d-flex-direction")=="row"){
